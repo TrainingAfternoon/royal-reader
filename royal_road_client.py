@@ -63,6 +63,65 @@ class SearchPage:
         self.fiction_items = [FictionItem(_fi) for _fi in _fiction_items]
 
 
+class FictionPageChapters:
+    def __init__(self, soup: BeautifulSoup):
+        # Attrs
+        self.title: str
+        self.url: str
+
+        # Title
+        # TODO: error handling
+        self.title = soup.a.text.strip()
+
+        # URL
+        # TODO: error handling
+        self.url = soup.a["href"]
+
+
+class FictionPage:
+    def __init__(self, soup: BeautifulSoup):
+        # Attrs
+        self.title: str
+        self.cover_img_url: str
+        self.chapters: list[FictionPageChapters]
+
+        # Title + Cover Img
+        fic_headers = soup.find_all("div", {"class": "fic-header"})
+        assert len(fic_headers) == 1, (
+            'Was only expecting to find one <div class="fic-header"> when parsing fiction page, but found multiple'
+        )
+        fic_header = fic_headers[0]
+
+        # TODO: go back and add good error handling
+        self.title = fic_header.find_all("h1")[0].text
+        self.cover_img_url = fic_header.find_all("img")[0]["src"].split("?")[0]
+
+        # Chapters
+        chapter_tables = soup.find_all("table")
+        chapter_table = chapter_tables[0]
+        assert len(chapter_table) == 1, (
+            f"Expecting to find 1 chapter table, instead found {len(chapter_tables)} when parsing fiction page"
+        )
+        self.chapters = [
+            FictionPageChapters(c)
+            for c in chapter_table.find_all("td", {"class": None})
+        ]
+
+
+class Chapter:
+    def __init__(self, soup: BeautifulSoup):
+        # Attrs
+        self.content: str
+
+        # Content
+        ccs = soup.find_all("div", {"class": "chapter-content"})
+        assert len(ccs) == 1, (
+            f"Expecting to find exactly 1 div with the chapter-content class, but found {len(ccs)}"
+        )
+        cc = ccs[0]
+        self.content = cc.text
+
+
 class RoyalRoadAPI:
     def __init__(self):
         self.base_url = "https://www.royalroad.com"
@@ -82,17 +141,32 @@ class RoyalRoadAPI:
 
         data = resp.content.decode("UTF-8")
         soup = BeautifulSoup(data, "html.parser")
-        sp = SearchPage(soup)
-        return sp
+        return SearchPage(soup)
 
-    # def get_fiction(self, fic_id: int):
-    #    route = f"{self.base_url}/fiction/{fic_id}"
+    def get_fiction(self, fic_id: int):
+        route = f"{self.base_url}/fiction/{fic_id}"
 
-    #    resp = requests.get(
-    #        route,
-    #    )
+        resp = requests.get(
+            route,
+        )
 
-    #    if not resp.ok:
-    #        raise Exception(f"Something went wrong getting {route}")
+        if not resp.ok:
+            raise Exception(f"Something went wrong getting {route}")
 
-    #    data = resp.content.decode("UTF-8")
+        data = resp.content.decode("UTF-8")
+        soup = BeautifulSoup(data)
+        return FictionPage(soup)
+
+    def get_chapter(self, chapter_url: str) -> Chapter:
+        route = f"{self.base_url}{chapter_url}"
+
+        resp = requests.get(
+            route,
+        )
+
+        if not resp.ok:
+            raise Exception(f"Something went wrong getting {route}")
+
+        data = resp.content.decode("UTF-8")
+        soup = BeautifulSoup(data)
+        return Chapter(soup)
