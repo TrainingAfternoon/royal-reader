@@ -1,7 +1,9 @@
-name: ci
+name: CI
+
+on: [push]
 
 jobs:
-  unit-tests:
+  pytest:
     name: python
     runs-on: ubuntu-latest
 
