@@ -1,4 +1,4 @@
-from soup_parsers import SoupParser
+from app.soup_parsers import SoupParser
 from bs4 import BeautifulSoup
 import requests
 
