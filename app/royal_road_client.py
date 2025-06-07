@@ -1,5 +1,9 @@
+from soup_parsers import SoupParser
 from bs4 import BeautifulSoup
 import requests
+
+# TODO: should pull this from a dotenv config file
+SOUP_PARSER: str = SoupParser.stdlib.value
 
 
 class FictionItem:
@@ -145,7 +149,7 @@ class RoyalRoadAPI:
             raise Exception(f"Something went wrong searching for {fic_name}")
 
         data = resp.content.decode("UTF-8")
-        soup = BeautifulSoup(data, "html.parser")
+        soup = BeautifulSoup(data, SOUP_PARSER)
         return SearchPage(soup)
 
     def get_fiction(self, fic_id: int):
@@ -159,7 +163,7 @@ class RoyalRoadAPI:
             raise Exception(f"Something went wrong getting {route}")
 
         data = resp.content.decode("UTF-8")
-        soup = BeautifulSoup(data, "html.parser")
+        soup = BeautifulSoup(data, SOUP_PARSER)
         return FictionPage(soup)
 
     def get_chapter(self, chapter_url: str) -> Chapter:
@@ -173,5 +177,5 @@ class RoyalRoadAPI:
             raise Exception(f"Something went wrong getting {route}")
 
         data = resp.content.decode("UTF-8")
-        soup = BeautifulSoup(data, "html.parser")
+        soup = BeautifulSoup(data, SOUP_PARSER)
         return Chapter(soup)

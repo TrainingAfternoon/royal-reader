@@ -11,6 +11,7 @@ class FictionInfo:
     chapter_url: str
 
 
+# TODO: I don't love passing this information from a dataclass. Make a fixture for each element?
 @pytest.fixture
 def pale_lights() -> FictionInfo:
     return FictionInfo(
