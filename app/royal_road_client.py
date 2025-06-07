@@ -26,19 +26,21 @@ class FictionItem:
             f"Expecting at least 4 components, only found {len(components)} in {components}"
         )
 
-        self.fic_id = int(href[2])
-        self.slug = href[3]
+        self.fic_id = int(components[2])
+        self.slug = components[3]
 
         # Pretty Title
         h2 = soup.find_next("h2", {"class": "fiction-title"})
         assert h2 is not None, (
             f"When trying to parse FictionItem could not find h2 under {soup}"
         )
-        self.pretty_fic_title = a.text
+        self.pretty_fic_title = h2.text.strip()
 
         # Book Cover
-        img = a.find_next("img")
-        assert img is not None, f"Could not find a <img> tag under in {img}"
+        img = a.img
+        assert img is not None, (
+            f"Expected to find <img> tag under {a} when parsing FictionItem"
+        )
         try:
             img_src = img["src"]
         except KeyError:
@@ -58,7 +60,7 @@ class SearchPage:
         assert len(fiction_lists) == 1, "Should only find 1 fiction list when searching"
 
         fiction_list = fiction_lists[0]
-        _fiction_items = fiction_list.find_next("div", {"class", "fiction-list-item"})
+        _fiction_items = fiction_list.find_all("div", {"class", "fiction-list-item"})
 
         self.fiction_items = [FictionItem(_fi) for _fi in _fiction_items]
 
@@ -76,6 +78,9 @@ class FictionPageChapters:
         # URL
         # TODO: error handling
         self.url = soup.a["href"]
+        assert self.url.startswith("/"), (
+            "Expecting chapter urls to start with a '/' when parsing FictionPageChapters"
+        )
 
 
 class FictionPage:
@@ -98,10 +103,10 @@ class FictionPage:
 
         # Chapters
         chapter_tables = soup.find_all("table")
-        chapter_table = chapter_tables[0]
-        assert len(chapter_table) == 1, (
+        assert len(chapter_tables) == 1, (
             f"Expecting to find 1 chapter table, instead found {len(chapter_tables)} when parsing fiction page"
         )
+        chapter_table = chapter_tables[0]
         self.chapters = [
             FictionPageChapters(c)
             for c in chapter_table.find_all("td", {"class": None})
@@ -154,7 +159,7 @@ class RoyalRoadAPI:
             raise Exception(f"Something went wrong getting {route}")
 
         data = resp.content.decode("UTF-8")
-        soup = BeautifulSoup(data)
+        soup = BeautifulSoup(data, "html.parser")
         return FictionPage(soup)
 
     def get_chapter(self, chapter_url: str) -> Chapter:
@@ -168,5 +173,5 @@ class RoyalRoadAPI:
             raise Exception(f"Something went wrong getting {route}")
 
         data = resp.content.decode("UTF-8")
-        soup = BeautifulSoup(data)
+        soup = BeautifulSoup(data, "html.parser")
         return Chapter(soup)
