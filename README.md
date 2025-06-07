@@ -17,5 +17,10 @@ uv run pre-commit install
 
 Run the app
 ```bash
-uv run main.py
+uv run app/main.py
+```
+
+Run the tests
+```bash
+uv run pytest
 ```
