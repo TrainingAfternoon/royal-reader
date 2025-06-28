@@ -1,4 +1,4 @@
-from app.royal_road_client import RoyalRoadAPI
+from app.royal_road.royal_road_client import RoyalRoadAPI
 from dataclasses import dataclass
 import pytest
 
