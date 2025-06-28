@@ -2,7 +2,7 @@
 ## Developer Set Up
 Install [`uv`](https://docs.astral.sh/uv/)
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | less
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 Install all developer packages
